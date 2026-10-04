@@ -1,2 +1,4 @@
 * text=auto eol=lf
 *.jpg binary
+# Public snapshots are hash-verified; preserve their exact UTF-8 source bytes.
+samples/public/*.txt -text
