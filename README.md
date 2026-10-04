@@ -1,6 +1,21 @@
 # Clause
 
-A contract review workspace built as a focused legal document intelligence portfolio project. Upload a vendor agreement, configure procurement policy, and review structured findings with exact supporting passages. Fictional sample agreements are included.
+A contract review workspace built as a focused legal document intelligence portfolio project. Upload a vendor agreement, configure procurement policy, and review structured findings with exact supporting passages. The offline demo includes **71 real public documents**, **1,930 CUAD source annotations**, and two fictional guided walkthroughs.
+
+![Clause public document library](docs/demo-library.jpg)
+
+## Explore the demo
+
+Startup seeds the bundled library automatically, once per database, without downloads or LLM calls. Browse and filter by collection and contract category, search titles and topics, and open a document. Every public sample includes attribution, a pinned source link, and a transformation notice.
+
+- **11 Common Paper standards:** Mutual NDA, Cloud Service Agreement, DPA, SLA, Professional Services Agreement, AI Addendum, Business Associate Agreement, Software License Agreement, Pilot Agreement, Partnership Agreement, and Design Partner Agreement.
+- **60 CUAD commercial contracts:** category-balanced historical contracts covering services, licensing, supply, distribution, confidentiality, marketing, franchise, partnerships and more. Explore attorney-supervised source excerpts in the **CUAD labels** tab and open the supporting source passage.
+- **2 fictional walkthroughs:** a five-deviation agreement and an aligned baseline with preloaded deterministic reviews. These provide a quick demo without API credentials.
+- **4 review playbooks:** procurement, privacy & AI, commercial diligence, and confidentiality. Customize the JSON instructions and keywords under Policy configuration.
+
+All public snapshots are attributed under CC BY 4.0; see [source and licensing notes](samples/ATTRIBUTION.md). Public text is transformed or extracted text, with no invented original page numbers. CUAD source links point to the pinned dataset; original contract titles are retained for tracing filings.
+
+In demo mode, **real public agreements always require review**. The application retrieves and verifies source evidence but does not run simplistic numeric checks to declare real contracts compliant. The fictional baseline examples retain the pattern reviewer. Configure OpenAI to run semantic policy analysis on a real document. Source annotations are labels, not compliance judgments.
 
 ## Run
 
@@ -11,7 +26,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Open http://localhost:3000. API documentation: http://localhost:8000/docs.
+Open http://localhost:3000. API documentation: http://localhost:8000/docs. The initial library contains 73 samples. Set `DEMO_SEED=false` to start an empty database instead. This flag does not delete already-seeded data.
 
 Without Docker, run `./scripts/dev.sh` on macOS/Linux or `./scripts/dev.ps1` on Windows. On Windows you can provide a Python executable with `-Python 'C:/path/to/python.exe'`. Local development defaults to SQLite; Docker uses Postgres with pgvector. Demo mode needs no credentials. Upload `fixtures/vendor-risky.txt` and click **Run policy review** to see five grounded deviations. Upload `vendor-compliant.txt` for the corresponding compliant cases.
 
@@ -60,12 +75,17 @@ flowchart LR
 cd backend
 python -m pytest -q
 python evaluate.py
+python evaluate_public.py
 cd ../frontend
 npm run typecheck
 npm run build
 ```
 
-The evaluation reports status accuracy, exact citation validity, and retrieval recall@5 on ten synthetic rule/document pairs. It fails on a baseline regression. Tests also cover forged citations, missing evidence, custom-policy abstention, page provenance, DOCX extraction, invalid uploads, and persisted API round trips. These small fixtures are regression checks, not an estimate of real contract accuracy. Set the LLM environment variables to evaluate the live provider explicitly; calls incur provider charges.
+The fixture evaluation reports status accuracy, exact citation validity, and retrieval recall@5 on ten synthetic rule/document pairs. It fails on a baseline regression. Tests also cover forged citations, missing evidence, custom-policy abstention, page provenance, DOCX extraction, invalid uploads, persisted API round trips, corpus checksums and source offsets, and idempotent seeding. These small fixtures are regression checks, not an estimate of real contract accuracy. Set the LLM environment variables to evaluate the live provider explicitly; calls incur provider charges.
+
+The public-corpus evaluation verifies all **1,930 annotation offsets** and measures lexical retrieval against eight CUAD labels across the 60 bundled contracts. Baseline answer recall@5 is **81.96% over 460 mappable answer excerpts**; 12 excerpts spanning parser passages are excluded. This subset and these queries are not held out, and the metric does not measure model comprehension or legal correctness. The complete per-label report is in [samples/evaluation.json](samples/evaluation.json). This harness makes retrieval misses visible rather than claiming production accuracy from fictional fixtures.
+
+To reproduce the pinned public snapshots, run `python scripts/fetch_samples.py` from the repository root using the backend environment. The manifest records upstream commit IDs, licenses, source URLs, archive/document checksums, transformations and original CUAD titles. This maintenance command requires network access; normal demo startup does not.
 
 ## Boundaries and next steps
 

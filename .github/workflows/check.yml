@@ -9,7 +9,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r backend/requirements.lock.txt && pip install --no-deps -e './backend[dev]'
-      - run: python -m pytest -q && python evaluate.py
+      - run: python -m pytest -q && python evaluate.py && python evaluate_public.py
         working-directory: backend
   frontend:
     runs-on: ubuntu-latest

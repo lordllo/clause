@@ -1,0 +1,51 @@
+{
+  "dataset": "Bundled CUAD subset",
+  "documents": 60,
+  "verified_annotation_offsets": 1930,
+  "answer_recall_at_5": 0.8196,
+  "retrieval_answers": 460,
+  "cross_passage_answers_excluded": 12,
+  "by_label": {
+    "Renewal Term": {
+      "answers": 27,
+      "hits": 26,
+      "recall_at_5": 0.963
+    },
+    "Notice Period To Terminate Renewal": {
+      "answers": 20,
+      "hits": 16,
+      "recall_at_5": 0.8
+    },
+    "Governing Law": {
+      "answers": 55,
+      "hits": 52,
+      "recall_at_5": 0.9455
+    },
+    "Exclusivity": {
+      "answers": 68,
+      "hits": 57,
+      "recall_at_5": 0.8382
+    },
+    "License Grant": {
+      "answers": 107,
+      "hits": 80,
+      "recall_at_5": 0.7477
+    },
+    "Cap On Liability": {
+      "answers": 73,
+      "hits": 52,
+      "recall_at_5": 0.7123
+    },
+    "Anti-Assignment": {
+      "answers": 78,
+      "hits": 68,
+      "recall_at_5": 0.8718
+    },
+    "Termination For Convenience": {
+      "answers": 32,
+      "hits": 26,
+      "recall_at_5": 0.8125
+    }
+  },
+  "limitations": "Eight keyword queries on a selected 60-contract subset. Multi-passage answers excluded. Not a held-out test; no model or legal correctness measured."
+}

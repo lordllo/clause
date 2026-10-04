@@ -12,13 +12,16 @@ services:
       interval: 5s
       retries: 10
   api:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       DATABASE_URL: postgresql+psycopg://clause:clause@db:5432/clause
       ANALYSIS_PROVIDER: ${ANALYSIS_PROVIDER:-demo}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
       WEB_ORIGIN: http://localhost:3000
+      DEMO_SEED: ${DEMO_SEED:-true}
     volumes:
       - uploads:/app/data
     ports:

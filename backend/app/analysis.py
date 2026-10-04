@@ -12,7 +12,8 @@ def demo(rule, candidates):
     # Deliberately conservative fixture reviewer. Custom rules always require human review.
     base = next((r for r in DEFAULT_POLICY.rules if r.id == rule.id), None)
     if not candidates or not base or rule.instruction != base.instruction:
-        return Finding(rule_id=rule.id, status="needs_review", explanation="No supported demo rule or relevant clause. Review manually or use the LLM provider.", action="Confirm this policy against the source document.", clause_id=None, quote=None)
+        c = candidates[0] if candidates else None
+        return Finding(rule_id=rule.id, status="needs_review", explanation="Demo mode retrieved evidence but cannot interpret this custom rule." if c else "No relevant clause retrieved.", action="Confirm this policy against the source document or use the LLM provider.", clause_id=c['id'] if c else None, quote=c['text'] if c else None)
     c = candidates[0]
     t = c["text"].lower()
     status = "needs_review"
@@ -39,7 +40,7 @@ def verify(finding, candidates):
         result.update(status="needs_review", action="Inspect the source; no verified supporting quotation.", quote=None, clause_id=None)
     return result
 
-def analyze(policy: Policy, clauses: list[dict]):
+def analyze(policy: Policy, clauses: list[dict], conservative: bool = False):
     provider = os.getenv("ANALYSIS_PROVIDER", "demo")
     if provider not in ("demo", "openai"):
         raise ValueError("Unknown analysis provider")
@@ -60,6 +61,10 @@ def analyze(policy: Policy, clauses: list[dict]):
             finding = parsed.findings[0]
         else:
             finding = demo(rule, candidates) if not client else Finding(rule_id=rule.id, status="needs_review", explanation="No relevant clause retrieved.", action="Check for omitted terms.", clause_id=None, quote=None)
+        if provider == 'demo' and conservative:
+            finding.status = 'needs_review'
+            finding.explanation = 'Relevant evidence retrieved from a public contract. Demo mode does not determine compliance for real agreements.' if candidates else 'No matching evidence retrieved. Absence from retrieval is not proof that a term is missing.'
+            finding.action = 'Inspect the cited passage and policy, or run the configured LLM reviewer.'
         verified = verify(finding, candidates)
         verified.update(rule_name=rule.name, policy=rule.instruction, severity=rule.severity, retrieved_clause_ids=[c["id"] for c in candidates])
         findings.append(verified)

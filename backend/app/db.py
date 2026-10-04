@@ -38,6 +38,12 @@ class PolicyRecord(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     body: Mapped[dict] = mapped_column(JSON)
 
+class SampleRecord(Base):
+    __tablename__ = "demo_samples"
+    key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), unique=True, index=True)
+    metadata_json: Mapped[dict] = mapped_column(JSON)
+
 url = os.getenv("DATABASE_URL", "sqlite:///./data/clause.db")
 os.makedirs("data", exist_ok=True)
 engine = create_engine(url, connect_args={"check_same_thread": False} if url.startswith("sqlite") else {}, pool_pre_ping=True)

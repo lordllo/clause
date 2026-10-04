@@ -8,14 +8,18 @@ from fastapi import FastAPI, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from sqlalchemy import select
-from .db import initialize, Session, Document, Clause, Review, PolicyRecord
+from .db import initialize, Session, Document, Clause, Review, PolicyRecord, SampleRecord
+from .demo import seed, summary, annotation_view
 from .schemas import Policy, DEFAULT_POLICY
 from .parsing import parse
 from .analysis import analyze
+from .presets import PRESETS
 
 @asynccontextmanager
 async def lifespan(app):
     initialize()
+    if os.getenv('DEMO_SEED', 'true').lower() == 'true':
+        seed()
     yield
 
 app = FastAPI(title="Clause API", lifespan=lifespan)
@@ -28,6 +32,10 @@ def health():
 @app.get("/policies/default")
 def default_policy():
     return DEFAULT_POLICY
+
+@app.get('/policies/presets')
+def presets():
+    return PRESETS
 
 @app.get("/policies")
 def policies():
@@ -46,7 +54,13 @@ def save_policy(policy: Policy):
 @app.get("/documents")
 def documents():
     with Session() as s:
-        return [{"id": d.id, "name": d.name, "created_at": d.created_at} for d in s.scalars(select(Document).order_by(Document.created_at.desc()))]
+        samples = {x.document_id:summary(x) for x in s.scalars(select(SampleRecord))}
+        return [{"id": d.id, "name": d.name, "created_at": d.created_at, 'sample':samples.get(d.id)} for d in s.scalars(select(Document).order_by(Document.created_at.desc()))]
+
+@app.get('/samples')
+def samples():
+    with Session() as s:
+        return [summary(x) for x in s.scalars(select(SampleRecord))]
 
 @app.post("/documents", status_code=201)
 def upload(file: UploadFile):
@@ -80,7 +94,10 @@ def document(id: str):
         if not d: raise HTTPException(404, "Document not found")
         clauses = [{"id": c.id, "page": c.page, "heading": c.heading, "text": c.text} for c in s.scalars(select(Clause).where(Clause.document_id == id))]
         reviews = [{"id": r.id, "created_at": r.created_at, "policy_snapshot": r.policy, **r.result} for r in s.scalars(select(Review).where(Review.document_id == id).order_by(Review.created_at.desc()))]
-        return {"id": id, "name": d.name, "clauses": clauses, "reviews": reviews}
+        sample = s.scalar(select(SampleRecord).where(SampleRecord.document_id == id))
+        return {"id": id, "name": d.name, "clauses": clauses, "reviews": reviews,
+            'sample':summary(sample) if sample else None,
+            'annotations':annotation_view(sample.metadata_json, clauses) if sample else []}
 
 @app.get("/documents/{id}/source")
 def source(id: str):
@@ -97,7 +114,8 @@ def review(id: str, policy: Policy):
         if not s.get(Document, id): raise HTTPException(404, "Document not found")
         clauses = [{"id": c.id, "page": c.page, "heading": c.heading, "text": c.text} for c in s.scalars(select(Clause).where(Clause.document_id == id))]
         try:
-            result = analyze(policy, clauses)
+            sample = s.scalar(select(SampleRecord).where(SampleRecord.document_id == id))
+            result = analyze(policy, clauses, conservative=bool(sample and not sample.metadata_json.get('fictional')))
         except Exception as exc:
             logging.getLogger("clause").exception("Review failed")
             raise HTTPException(502, "Analysis failed. Check provider configuration and retry.") from exc
