@@ -1,0 +1,14 @@
+1. Governing Law
+This agreement is governed by the laws of New York.
+
+2. Renewal
+The subscription renews automatically. Customer must give cancellation notice at least 30 days before renewal.
+
+3. Liability
+Vendor's aggregate liability shall be capped at 12 months of fees.
+
+4. Customer Data
+Vendor must not use customer data for training machine-learning models.
+
+5. Security Breach
+Vendor shall notify Customer of a security breach within 72 hours of discovery.
