@@ -62,23 +62,22 @@ export default function Home(){
   <header><a className="brand" href="/">clause<span> / </span></a><span>CONTRACT INTELLIGENCE</span><small>{hosted?'Online demo':'Local workspace'} · {mode==='demo'?'Demo reviewer':mode||'Connecting'}</small></header>
   <main><aside>
    <div className="eyebrow">WORKSPACE</div><h2>Document library <span>{docs.length}</span></h2>
-   <button className={!detail?'library-button active':'library-button'} disabled={busy} onClick={library}>Browse sample library →</button>
+   <button className={!detail?'library-button active':'library-button'} disabled={busy} onClick={library}>All sample documents</button>
    <label className="upload">{busy?'Working…':'+ Upload contract'}<input aria-label="Upload contract" disabled={busy} type="file" accept=".pdf,.docx,.txt" onChange={e=>{if(e.target.files?.[0])void upload(e.target.files[0]);e.target.value=''}}/></label>
-   <p className="hint">PDF, DOCX or TXT · Up to 10 MB</p><div className="eyebrow sidebar-label">GUIDED WALKTHROUGHS</div>
+   <p className="hint">PDF, DOCX or TXT · Up to 10 MB</p><div className="eyebrow sidebar-label">EXAMPLE REVIEWS</div>
    <nav>{samples.filter(d=>d.sample?.fictional).map(d=><button key={d.id} disabled={busy} className={detail?.id===d.id?'doc active':'doc'} onClick={()=>open(d.id)}><span>▤</span>{d.name}</button>)}</nav>
    <div className="eyebrow sidebar-label">YOUR UPLOADS</div>
    <nav>{docs.filter(d=>!d.sample).map(d=><button key={d.id} disabled={busy} className={detail?.id===d.id?'doc active':'doc'} onClick={()=>open(d.id)}><span>▤</span>{d.name}</button>)}</nav>
-   <div className="aside-note">From source to decision.<br/>Every finding has a policy and an inspectable source.</div>
   </aside><section className="workspace">
-   <div className="eyebrow">{detail?'CONTRACT REVIEW':'PUBLIC CONTRACT LIBRARY'}</div><h1>{detail?.name||'Real documents. Inspectable evidence.'}</h1>
-   <p className="subtitle">{detail?'Compare terms with your policy, explore labeled clauses, and inspect the supporting text.':'Explore public commercial contracts and standard agreements. Start with a guided walkthrough or choose a real source.'}</p>
-   {hosted&&<div className="notice">Public demonstration. Use public or fictional documents only. Your uploads, saved policies, and reviews belong to this browser session and expire after one hour. The sample library is shared; no AI provider is called.</div>}
+   {detail&&<div className="eyebrow">CONTRACT REVIEW</div>}<h1>{detail?.name||'Documents'}</h1>
+   <p className="subtitle">{detail?'Review policy findings and the clauses they refer to.':'Select a sample agreement or upload a contract to review.'}</p>
+   {hosted&&<div className="notice">Demo workspace. Use public or fictional documents only. Uploads, policies, and reviews are limited to this browser session and expire after one hour. Reviews use preset checks, not a live AI model.</div>}
    {error&&<div role="alert" className="error">{error}</div>}{message&&<p role="status">{message}</p>}
    {!detail?<>
-    <div className="metrics"><div><b>{publicSamples.length}</b><span>Public documents</span></div><div><b>{samples.filter(d=>d.sample?.fictional).length}</b><span>Guided walkthroughs</span></div><div><b>{publicSamples.reduce((n,d)=>n+d.sample!.annotation_count,0).toLocaleString()}</b><span>CUAD source annotations</span></div></div>
-    <div className="notice">Real source text is included locally with CC BY 4.0 attribution. CUAD annotations identify clause text; they are not policy-compliance judgments. Demo reviews retrieve evidence and leave real agreements for human review.</div>
+    <div className="metrics"><div><b>{publicSamples.length}</b><span>Sample agreements</span></div><div><b>{samples.filter(d=>d.sample?.fictional).length}</b><span>Example reviews</span></div><div><b>{publicSamples.reduce((n,d)=>n+d.sample!.annotation_count,0).toLocaleString()}</b><span>Annotated clauses</span></div></div>
+    <p className="hint">Sources: Common Paper and CUAD · CC BY 4.0. Clause annotations identify contract terms; they do not establish compliance with your policy.</p>
     <div className="library-filters"><input aria-label="Search sample library" type="search" placeholder="Search titles, publishers, or topics…" value={query} onChange={e=>setQuery(e.target.value)}/><select aria-label="Filter collection" value={collection} onChange={e=>setCollection(e.target.value)}>{collections.map(c=><option key={c}>{c}</option>)}</select><select aria-label="Filter category" value={category} onChange={e=>setCategory(e.target.value)}>{groups.map(c=><option key={c}>{c}</option>)}</select></div>
-    <p className="hint">{filtered.length} documents · Public templates may contain unfilled variables. Historical contracts are provided for exploration.</p>
+    <p className="hint">{filtered.length} documents · Templates may contain blank fields. Filed agreements may be historical.</p>
     <div className="sample-grid">{filtered.map(d=>{const s=d.sample!;return <article className="sample-card" key={d.id}><div className="eyebrow">{s.category}</div><h3>{d.name}</h3><p>{s.description}</p><div className="sample-meta"><span>{s.publisher}</span><span>{s.annotation_count?`${s.annotation_count} annotations`:s.fictional?'Preloaded review':'Published standard'}</span></div><div className="sample-actions"><button disabled={busy} onClick={()=>open(d.id)}>Open document →</button>{s.source_url&&<a href={s.source_url} target="_blank" rel="noreferrer">Original source ↗</a>}</div></article>})}</div>
     {!filtered.length&&<div className="empty"><h2>No documents match.</h2><p>Try another search or remove a filter.</p></div>}
    </>:<>
