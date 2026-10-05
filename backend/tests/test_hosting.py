@@ -46,13 +46,14 @@ def test_demo_upload_limit(hosted):
         assert hosted.post('/documents',files={'file':(f'{i}.txt',b'1. Law\nNew York applies.')}).status_code==201
     assert hosted.post('/documents',files={'file':('six.txt',b'1. Law\nNew York applies.')}).status_code==429
 
-def test_expired_uploads_are_removed(hosted):
+def test_expired_uploads_are_removed(hosted, monkeypatch):
     id=hosted.post('/documents',files={'file':('expired.txt',b'1. Law\nNew York applies.')}).json()['id']
     with Session() as session:
         access=session.get(DemoAccess,id)
         access.created_at=datetime.now(timezone.utc)-timedelta(hours=2)
         session.commit()
     hosting._last_cleanup=0
+    monkeypatch.setattr(hosting.time, 'monotonic', lambda: 10)
     hosting.cleanup()
     assert hosted.get('/documents/'+id).status_code==404
 

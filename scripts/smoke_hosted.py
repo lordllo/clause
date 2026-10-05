@@ -1,5 +1,6 @@
 """Verify the built, single-origin deployment through HTTP, with separate cookies."""
 import argparse
+import http.client
 import http.cookiejar
 import json
 import time
@@ -23,7 +24,7 @@ def main():
         try:
             status,health=request(a,'/api/health')
             if status==200: break
-        except (urllib.error.URLError,TimeoutError): pass
+        except (OSError,http.client.HTTPException): pass
         time.sleep(1)
     else: raise RuntimeError('Hosted API never became healthy')
     assert health['public_demo'] and health['provider']=='demo'

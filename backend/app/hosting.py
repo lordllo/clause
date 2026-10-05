@@ -82,7 +82,7 @@ def cleanup():
     global _last_cleanup
     now=time.monotonic()
     with _lock:
-        if now-_last_cleanup < 60: return
+        if _last_cleanup and now-_last_cleanup < 60: return
         _last_cleanup=now
     cutoff=datetime.now(timezone.utc)-timedelta(seconds=TTL)
     with Session() as session:
