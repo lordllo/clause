@@ -26,8 +26,8 @@ def seed():
     examples = [
         ('vendor-risky.txt', 'Northstar Systems — Vendor terms',
          'Sample agreement with five terms to negotiate: governing law, renewal, liability, data use, and breach notice. Northstar Systems is a fictional supplier.'),
-        ('vendor-compliant.txt', 'Cedarworks — Revised vendor terms',
-         'Sample agreement aligned with the five standard policy checks. Compare its terms with the Northstar example. Cedarworks is a fictional supplier.'),
+        ('vendor-compliant.txt', 'Northstar Systems — Revised terms',
+         'Revised sample agreement aligned with the five standard policy checks. Compare it with the original vendor terms. Northstar Systems is a fictional supplier.'),
     ]
     for name, title, description in examples:
         entries.append({'key':name.removesuffix('.txt'),'title':title,'file':name,
