@@ -12,7 +12,7 @@ type Doc = {id:string;name:string;sample:Sample|null};
 type Detail = Doc & {clauses:Passage[];reviews:Review[];annotations:Annotation[]};
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 async function request(path:string, options?:RequestInit) {
- const r = await fetch(API+path,options); const body = await r.json();
+ const r = await fetch(API+path,{credentials:'include',...options}); const body = await r.json();
  if(!r.ok) throw new Error(typeof body.detail==='string'?body.detail:'The request could not be completed. Check policy fields.');
  return body;
 }
@@ -20,11 +20,11 @@ export default function Home(){
  const [docs,setDocs]=useState<Doc[]>([]), [detail,setDetail]=useState<Detail|null>(null);
  const [policy,setPolicy]=useState<Policy|null>(null), [draft,setDraft]=useState(''), [presets,setPresets]=useState<Preset[]>([]);
  const [review,setReview]=useState<Review|null>(null), [selected,setSelected]=useState<string|null>(null);
- const [busy,setBusy]=useState(false), [error,setError]=useState(''), [mode,setMode]=useState(''), [message,setMessage]=useState('');
+ const [busy,setBusy]=useState(false), [error,setError]=useState(''), [mode,setMode]=useState(''), [message,setMessage]=useState(''), [hosted,setHosted]=useState(false);
  const [query,setQuery]=useState(''), [collection,setCollection]=useState('All collections'), [category,setCategory]=useState('All categories');
  const [view,setView]=useState('review'), [annotationQuery,setAnnotationQuery]=useState('');
  useEffect(()=>{
-  Promise.all([request('/documents'),request('/policies/default'),request('/health'),request('/policies/presets')])
+  request('/health').then(h=>{setHosted(Boolean(h.public_demo));return Promise.all([request('/documents'),request('/policies/default'),Promise.resolve(h),request('/policies/presets')])})
    .then(([d,p,h,ps])=>{setDocs(d);setPolicy(p);setDraft(JSON.stringify(p,null,2));setMode(h.provider);setPresets(ps)})
    .catch(e=>setError(e.message));
  },[]);
@@ -59,7 +59,7 @@ export default function Home(){
  const annotations=detail?.annotations.filter(a=>a.label.toLowerCase().includes(annotationQuery.toLowerCase()))||[];
  const location=detail?.sample||!detail?.name.toLowerCase().endsWith('.pdf')?'Extracted text':`Page ${passage?.page}`;
  return <>
-  <header><a className="brand" href="/">clause<span> / </span></a><span>CONTRACT INTELLIGENCE</span><small>Local workspace · {mode==='demo'?'Demo reviewer':mode||'Connecting'}</small></header>
+  <header><a className="brand" href="/">clause<span> / </span></a><span>CONTRACT INTELLIGENCE</span><small>{hosted?'Online demo':'Local workspace'} · {mode==='demo'?'Demo reviewer':mode||'Connecting'}</small></header>
   <main><aside>
    <div className="eyebrow">WORKSPACE</div><h2>Document library <span>{docs.length}</span></h2>
    <button className={!detail?'library-button active':'library-button'} disabled={busy} onClick={library}>Browse sample library →</button>
@@ -72,6 +72,7 @@ export default function Home(){
   </aside><section className="workspace">
    <div className="eyebrow">{detail?'CONTRACT REVIEW':'PUBLIC CONTRACT LIBRARY'}</div><h1>{detail?.name||'Real documents. Inspectable evidence.'}</h1>
    <p className="subtitle">{detail?'Compare terms with your policy, explore labeled clauses, and inspect the supporting text.':'Explore public commercial contracts and standard agreements. Start with a guided walkthrough or choose a real source.'}</p>
+   {hosted&&<div className="notice">Public demonstration. Use public or fictional documents only. Your uploads, saved policies, and reviews belong to this browser session and expire after one hour. The sample library is shared; no AI provider is called.</div>}
    {error&&<div role="alert" className="error">{error}</div>}{message&&<p role="status">{message}</p>}
    {!detail?<>
     <div className="metrics"><div><b>{publicSamples.length}</b><span>Public documents</span></div><div><b>{samples.filter(d=>d.sample?.fictional).length}</b><span>Guided walkthroughs</span></div><div><b>{publicSamples.reduce((n,d)=>n+d.sample!.annotation_count,0).toLocaleString()}</b><span>CUAD source annotations</span></div></div>

@@ -23,7 +23,7 @@ services:
       WEB_ORIGIN: http://localhost:3000
       DEMO_SEED: ${DEMO_SEED:-true}
     volumes:
-      - uploads:/app/data
+      - uploads:/app/backend/data
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:

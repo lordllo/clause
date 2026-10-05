@@ -19,6 +19,8 @@ In demo mode, **real public agreements always require review**. The application 
 
 ## Run
 
+For the prepared single-container online demo, see [deployment instructions](docs/DEPLOYMENT.md) and `render.yaml`. The public mode adds temporary visitor workspaces, same-origin API requests, bounded writes, and demo-only analysis. It is designed for public/fictional documents rather than durable customer workspaces.
+
 Requires Node 22+ and Python 3.11+, or Docker Compose.
 
 ```sh

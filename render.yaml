@@ -1,0 +1,22 @@
+# Free single-container portfolio demo. Visitor state is deliberately ephemeral.
+services:
+  - type: web
+    name: clause-demo
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: PUBLIC_DEMO
+        value: "true"
+      - key: ANALYSIS_PROVIDER
+        value: demo
+      - key: DEMO_SEED
+        value: "true"
+      - key: DEMO_COOKIE_SECURE
+        value: "true"
+      - key: DEMO_SESSION_SECRET
+        generateValue: true

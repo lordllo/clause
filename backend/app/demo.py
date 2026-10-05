@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from uuid import uuid4
 from sqlalchemy import select
-from .db import Session, Document, Clause, SampleRecord, Review
+from .db import Session, Document, Clause, SampleRecord, Review, DemoAccess, DATA_DIR
 from .parsing import parse
 from .schemas import DEFAULT_POLICY
 
@@ -47,7 +47,7 @@ def seed():
                 raise ValueError(f"Sample checksum mismatch: {entry['key']}")
             parsed = parse(content, '.txt')
             id = str(uuid4())
-            target = Path('data/uploads') / (id + '.txt')
+            target = Path(DATA_DIR) / 'uploads' / (id + '.txt')
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(content)
             session.add(Document(id=id, name=entry['title'], digest=digest, source_path=str(target)))
@@ -63,8 +63,10 @@ def seed():
                     item=verify(demo(rule, candidates), candidates)
                     item.update(rule_name=rule.name, policy=rule.instruction, severity=rule.severity)
                     findings.append(item)
-                session.add(Review(id=str(uuid4()), document_id=id, policy=DEFAULT_POLICY.model_dump(),
+                review_id = str(uuid4())
+                session.add(Review(id=review_id, document_id=id, policy=DEFAULT_POLICY.model_dump(),
                     result={'provider':'demo','model':None,'pipeline_version':'1','findings':findings}))
+                session.add(DemoAccess(resource_id=review_id,kind='review',owner='public_sample'))
             added += 1
         session.commit()
     return {'added':added}

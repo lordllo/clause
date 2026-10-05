@@ -22,3 +22,15 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci && npm run typecheck && npm run build
         working-directory: frontend
+  hosted-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: docker build -t clause-demo .
+      - run: docker run -d --name clause-demo -p 8001:8000 -e PUBLIC_DEMO=true -e DEMO_SESSION_SECRET=ci-only-secret-not-used-in-production-12345 -e DEMO_COOKIE_SECURE=false clause-demo
+      - run: python scripts/smoke_hosted.py --url http://127.0.0.1:8001
+      - if: always()
+        run: docker logs clause-demo

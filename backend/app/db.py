@@ -44,8 +44,20 @@ class SampleRecord(Base):
     document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), unique=True, index=True)
     metadata_json: Mapped[dict] = mapped_column(JSON)
 
-url = os.getenv("DATABASE_URL", "sqlite:///./data/clause.db")
-os.makedirs("data", exist_ok=True)
+class DemoAccess(Base):
+    __tablename__ = "demo_access"
+    resource_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(20), index=True)
+    owner: Mapped[str] = mapped_column(String(64), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+DATA_DIR = os.getenv('DATA_DIR', 'data')
+os.makedirs(DATA_DIR, exist_ok=True)
+url = os.getenv("DATABASE_URL", "sqlite:///" + str(os.path.join(DATA_DIR, 'clause.db')).replace('\\', '/'))
+if url.startswith('postgres://'):
+    url = url.replace('postgres://', 'postgresql+psycopg://', 1)
+elif url.startswith('postgresql://'):
+    url = url.replace('postgresql://', 'postgresql+psycopg://', 1)
 engine = create_engine(url, connect_args={"check_same_thread": False} if url.startswith("sqlite") else {}, pool_pre_ping=True)
 Session = sessionmaker(engine)
 
