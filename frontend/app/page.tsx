@@ -59,7 +59,7 @@ export default function Home(){
  const annotations=detail?.annotations.filter(a=>a.label.toLowerCase().includes(annotationQuery.toLowerCase()))||[];
  const location=detail?.sample||!detail?.name.toLowerCase().endsWith('.pdf')?'Extracted text':`Page ${passage?.page}`;
  return <>
-  <header><a className="brand" href="/">clause<span> / </span></a><span>CONTRACT INTELLIGENCE</span><small>{hosted?'Online demo':'Local workspace'} · {mode==='demo'?'Demo reviewer':mode||'Connecting'}</small></header>
+  <header><a className="brand" href="/">clause<span> / </span></a><span>CONTRACT INTELLIGENCE</span><small>{hosted?'Sample workspace':'Local workspace'} · {mode==='demo'?'Standard policy checks':mode||'Connecting'}</small></header>
   <main><aside>
    <div className="eyebrow">WORKSPACE</div><h2>Document library <span>{docs.length}</span></h2>
    <button className={!detail?'library-button active':'library-button'} disabled={busy} onClick={library}>All sample documents</button>
@@ -71,7 +71,7 @@ export default function Home(){
   </aside><section className="workspace">
    {detail&&<div className="eyebrow">CONTRACT REVIEW</div>}<h1>{detail?.name||'Documents'}</h1>
    <p className="subtitle">{detail?'Review policy findings and the clauses they refer to.':'Select a sample agreement or upload a contract to review.'}</p>
-   {hosted&&<div className="notice">Demo workspace. Use public or fictional documents only. Uploads, policies, and reviews are limited to this browser session and expire after one hour. Reviews use preset checks, not a live AI model.</div>}
+   {hosted&&<div className="notice">Use public or sample documents only. Your uploads, policies, and reviews expire after one hour. Example agreements include completed reviews; public contracts provide clauses for manual review. Live AI analysis is not enabled.</div>}
    {error&&<div role="alert" className="error">{error}</div>}{message&&<p role="status">{message}</p>}
    {!detail?<>
     <div className="metrics"><div><b>{publicSamples.length}</b><span>Sample agreements</span></div><div><b>{samples.filter(d=>d.sample?.fictional).length}</b><span>Example reviews</span></div><div><b>{publicSamples.reduce((n,d)=>n+d.sample!.annotation_count,0).toLocaleString()}</b><span>Annotated clauses</span></div></div>
@@ -83,7 +83,7 @@ export default function Home(){
    </>:<>
     <button className="back" disabled={busy} onClick={library}>← Back to library</button>
     {detail.sample&&<div className="provenance"><strong>{detail.sample.collection} · {detail.sample.category}</strong><p>{detail.sample.description}</p><p>{detail.sample.attribution||'Created for the Clause demo.'}</p>{detail.sample.source_url&&<a href={detail.sample.source_url} target="_blank" rel="noreferrer">View pinned original source ↗</a>}{detail.sample.license_url&&<> · <a href={detail.sample.license_url} target="_blank" rel="noreferrer">{detail.sample.license}</a></>}{detail.sample.transformations&&<p className="hint">{detail.sample.transformations}</p>}</div>}
-    {mode==='demo'&&<div className="notice">{detail.sample&&!detail.sample.fictional?'Real agreement: demo mode retrieves passages and marks every policy finding as needing review. Use the CUAD labels to explore attorney-supervised annotations, or configure the LLM provider for semantic analysis.':'Demo mode uses simple pattern checks for the five baseline rules. Custom rules require manual review. Configure the LLM provider for semantic analysis.'}</div>}
+    {mode==='demo'&&<div className="notice">{detail.sample&&!detail.sample.fictional?'This review locates clauses relevant to your policy. All findings require manual review; the checks do not assess compliance for public agreements.':'This sample uses five standard policy checks. Custom rules and final interpretation require manual review. Live AI analysis is not enabled.'}</div>}
     <details><summary>Policy configuration <span>{policy?.name}</span></summary><label className="preset-label">Choose a review playbook <select aria-label="Review playbook" defaultValue="" onChange={e=>choosePreset(e.target.value)}><option value="" disabled>Choose preset</option>{presets.map(p=><option key={p.id} value={p.id}>{p.policy.name}</option>)}</select></label><p className="hint">Edit instructions, keywords, severity, and rule IDs. Custom rules retrieve evidence in demo mode; the LLM interprets their instructions.</p><textarea aria-label="Policy JSON" value={draft} onChange={e=>setDraft(e.target.value)} spellCheck={false}/><button disabled={busy} onClick={save}>Save policy</button></details>
     <div className="toolbar"><h2>{review?'Review findings':'Ready for review'}</h2><button className="primary" disabled={busy} onClick={run}>{busy?'Reviewing…':'Run policy review →'}</button></div>
     <div className="tabs" role="group" aria-label="Document views"><button className={view==='review'?'active':''} onClick={()=>setView('review')}>Policy review</button><button className={view==='annotations'?'active':''} onClick={()=>setView('annotations')}>CUAD labels ({detail.annotations.length})</button><button className={view==='source'?'active':''} onClick={()=>setView('source')}>Source passages ({detail.clauses.length})</button></div>

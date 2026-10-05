@@ -23,10 +23,16 @@ def seed():
     manifest = SAMPLES / 'manifest.json'
     if not manifest.exists(): return {'added':0}
     entries = json.loads(manifest.read_text(encoding='utf-8'))
-    for name, title in [('vendor-risky.txt','Fictional vendor — five deviations'), ('vendor-compliant.txt','Fictional vendor — aligned baseline')]:
+    examples = [
+        ('vendor-risky.txt', 'Northstar Systems — Vendor terms',
+         'Sample agreement with five terms to negotiate: governing law, renewal, liability, data use, and breach notice. Northstar Systems is a fictional supplier.'),
+        ('vendor-compliant.txt', 'Cedarworks — Revised vendor terms',
+         'Sample agreement aligned with the five standard policy checks. Compare its terms with the Northstar example. Cedarworks is a fictional supplier.'),
+    ]
+    for name, title, description in examples:
         entries.append({'key':name.removesuffix('.txt'),'title':title,'file':name,
-            'collection':'Fictional walkthroughs','category':'Guided demo','publisher':'Clause',
-            'description':'Synthetic agreement demonstrating the deterministic reviewer. Not a real contract.',
+            'collection':'Example reviews','category':'Vendor review','publisher':'Clause',
+            'description':description,
             'license':'Project fixture','source_url':None,'annotations':[], 'fictional':True})
     added = 0
     with Session() as session:
